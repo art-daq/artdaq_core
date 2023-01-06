@@ -185,19 +185,23 @@ std::string artdaq::SharedMemoryEventReceiver::printBuffers_(SharedMemoryManager
 	{
 		ostr << "Buffer " << ii << ": " << std::endl;
 
-		data_source->ResetReadPos(ii);
-		data_source->IncrementReadPos(ii, sizeof(detail::RawEventHeader));
+		void* data_ptr = data_source->GetBufferStart(ii);
+		void* end_ptr = static_cast<uint8_t*>(data_ptr) + data_source->BufferDataSize(ii);
+		data_ptr = static_cast<uint8_t*>(data_ptr) + sizeof(detail::RawEventHeader);
+		TLOG_DEBUG(33) << "Buffer " << ii << ": data_ptr: " << data_ptr << ", end_ptr: " << end_ptr;
 
-		while (data_source->MoreDataInBuffer(ii))
+		while (data_ptr < end_ptr)
 		{
-			auto fragHdr = reinterpret_cast<artdaq::detail::RawFragmentHeader*>(data_source->GetReadPos(ii));  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
+			auto fragHdr = reinterpret_cast<artdaq::detail::RawFragmentHeader*>(data_ptr);  // NOLINT(cppcoreguidelines-pro-type-reinterpret-cast)
 			ostr << "    Fragment " << fragHdr->fragment_id << ": Sequence ID: " << fragHdr->sequence_id << ", Type:" << fragHdr->type;
 			if (artdaq::detail::RawFragmentHeader::MakeVerboseSystemTypeMap().count(fragHdr->type) != 0u)
 			{
 				ostr << " (" << artdaq::detail::RawFragmentHeader::MakeVerboseSystemTypeMap()[fragHdr->type] << ")";
 			}
 			ostr << ", Size: " << fragHdr->word_count << " words." << std::endl;
-			data_source->IncrementReadPos(ii, fragHdr->word_count * sizeof(RawDataType));
+			data_ptr = static_cast<uint8_t*>(data_ptr) + fragHdr->word_count * sizeof(RawDataType);
+
+			TLOG_DEBUG(33) << "Buffer " << ii << ": After reading Fragment of size " << static_cast<int>(fragHdr->word_count * sizeof(RawDataType)) << " data_ptr: " << data_ptr << ", end_ptr: " << end_ptr;
 		}
 	}
 	return ostr.str();

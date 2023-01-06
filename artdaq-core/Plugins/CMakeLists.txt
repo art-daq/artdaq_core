@@ -16,7 +16,7 @@ cet_make_library(LIBRARY_NAME fragmentNameHelper INTERFACE
   cetlib::compiler_macros
 )
 
-cet_write_plugin_builder(artdaq::fragmentNameHelper art::plugin Modules
+cet_write_plugin_builder(artdaq::fragmentNameHelper artdaq::fragmentNameHelper Modules
   SUFFIX fragmentNameHelper
   INSTALL_BUILDER
   LIBRARIES CONDITIONAL artdaq_plugin_types::fragmentNameHelper
@@ -29,7 +29,7 @@ cet_make_library(LIBRARY_NAME generator INTERFACE
 	artdaq_core::artdaq-core_Data
 )
 
-cet_write_plugin_builder(artdaq::generator art::plugin Modules
+cet_write_plugin_builder(artdaq::generator artdaq::generator Modules
   SUFFIX generator
   INSTALL_BUILDER
   LIBRARIES

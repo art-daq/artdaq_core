@@ -1,7 +1,7 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
 parent artdaq_core
-defaultqual	e20:s110
+defaultqual	e20:s112
 
 # These optional lines define the installed directories where
 # headers, libraries, and executables will be found
@@ -21,18 +21,36 @@ old_style_config_vars
 
 #
 product			version		optional
+canvas_root_io	v1_11_00	s118
 canvas_root_io	v1_10_02	s116
 canvas_root_io	v1_10_01	s115
 canvas_root_io	v1_10_00	s114
+canvas_root_io	v1_09_05	s117
+canvas_root_io	v1_09_04a	s112a
 canvas_root_io	v1_09_04	s112
-canvas_root_io	v1_07_03	s110
 TRACE			v3_17_05
-cetmodules		v3_16_00	-	only_for_build
+cetmodules		v3_19_02	-	only_for_build
 end_product_list
 
 # -nq- means there is no qualifier
 # a "-" means the dependent product is not required by the parent and will not be setup
 qualifier		canvas_root_io	TRACE	notes
+c7:s118:debug	c7:debug		-nq-	-std=c++17
+c7:s118:prof	c7:prof			-nq-	-std=c++17
+c14:s118:debug	c14:debug		-nq-	-std=c++17
+c14:s118:prof	c14:prof		-nq-	-std=c++17
+e20:s118:debug	e20:debug		-nq-	-std=c++17
+e20:s118:prof	e20:prof		-nq-	-std=c++17
+e26:s118:debug	e26:debug		-nq-	-std=c++17
+e26:s118:prof	e26:prof		-nq-	-std=c++17
+
+c7:s117:debug	c7:debug		-nq-	-std=c++17
+c7:s117:prof	c7:prof			-nq-	-std=c++17
+e20:s117:debug	e20:debug		-nq-	-std=c++17
+e20:s117:prof	e20:prof		-nq-	-std=c++17
+e19:s117:debug	e19:debug		-nq-	-std=c++17
+e19:s117:prof	e19:prof		-nq-	-std=c++17
+
 c7:s116:debug	c7:debug		-nq-	-std=c++17
 c7:s116:prof	c7:prof			-nq-	-std=c++17
 e20:s116:debug	e20:debug		-nq-	-std=c++17
@@ -53,6 +71,13 @@ e20:s114:debug	e20:debug		-nq-	-std=c++17
 e20:s114:prof	e20:prof		-nq-	-std=c++17
 e19:s114:debug	e19:debug		-nq-	-std=c++17
 e19:s114:prof	e19:prof		-nq-	-std=c++17
+
+c7:s112a:debug	c7:debug		-nq-	-std=c++17
+c7:s112a:prof	c7:prof			-nq-	-std=c++17
+e20:s112a:debug	e20:debug		-nq-	-std=c++17
+e20:s112a:prof	e20:prof		-nq-	-std=c++17
+e19:s112a:debug	e19:debug		-nq-	-std=c++17
+e19:s112a:prof	e19:prof		-nq-	-std=c++17
 
 c7:s112:debug	c7:debug		-nq-	-std=c++17
 c7:s112:prof	c7:prof			-nq-	-std=c++17

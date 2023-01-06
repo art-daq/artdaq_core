@@ -191,7 +191,7 @@ BOOST_AUTO_TEST_CASE(Resize)
 	                                   artdaq::detail::RawFragmentHeader::num_words());
 
 	// fragment with metadata
-	MetadataTypeOne mdOneA;
+	MetadataTypeOne mdOneA{};
 	artdaq::Fragment f2(1, 123, 3, 5, mdOneA);
 	f2.resize(129);
 	BOOST_REQUIRE_EQUAL(f2.dataSize(), (size_t)129);
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE(Empty)
 	f1.resize(1234);
 	BOOST_REQUIRE_EQUAL(f1.empty(), false);
 
-	MetadataTypeOne mdOneA;
+	MetadataTypeOne mdOneA{};
 	artdaq::Fragment f2(1, 123, 3, 5, mdOneA);
 	BOOST_REQUIRE_EQUAL(f2.empty(), false);
 	f2.resize(129);
@@ -300,7 +300,7 @@ BOOST_AUTO_TEST_CASE(Addresses)
 	BOOST_REQUIRE_EQUAL(cdaddr + 200, &(*(cf1.dataEnd())));  // NOLINT(cppcoreguidelines-pro-bounds-pointer-arithmetic)
 
 	// metadata with integer number of longwords
-	MetadataTypeOne mdOneA;
+	MetadataTypeOne mdOneA{};
 	artdaq::Fragment f2(135, 101, 0, 3, mdOneA);
 	BOOST_REQUIRE_EQUAL(f2.dataSize(), (size_t)135);
 	BOOST_REQUIRE_EQUAL(f2.size(), (size_t)135 + 2 +
@@ -352,7 +352,7 @@ BOOST_AUTO_TEST_CASE(Metadata)
 	BOOST_REQUIRE_EQUAL(mdOnePtr->field2, (uint32_t)10);
 	BOOST_REQUIRE_EQUAL(mdOnePtr->field3, (uint32_t)15);
 
-	MetadataTypeOne mdOneB;
+	MetadataTypeOne mdOneB{};
 	BOOST_REQUIRE_THROW(f1.setMetadata(mdOneB), cet::exception);
 
 	f1.updateMetadata(*mdOnePtr);
