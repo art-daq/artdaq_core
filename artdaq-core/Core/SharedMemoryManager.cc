@@ -1177,7 +1177,8 @@ bool artdaq::SharedMemoryManager::Read(int buffer, void* data, size_t size)
 
 std::string artdaq::SharedMemoryManager::toString()
 {
-	if (shm_ptr_ == nullptr) {
+	if (shm_ptr_ == nullptr)
+	{
 		return "Not connected to shared memory";
 	}
 	std::ostringstream ostr;
