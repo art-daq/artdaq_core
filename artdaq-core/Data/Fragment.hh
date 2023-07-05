@@ -2,7 +2,7 @@
 #define artdaq_core_Data_Fragment_hh
 
 #include <algorithm>
-//#include <cassert>
+// #include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -29,7 +29,7 @@
  */
 namespace artdaq {
 #define DATAVEC_T QuickVec<RawDataType>
-//#define DATAVEC_T std::vector<RawDataType>
+// #define DATAVEC_T std::vector<RawDataType>
 
 /**
  * \brief The RawDataType (currently a 64-bit integer) is the basic unit of data representation within _artdaq_

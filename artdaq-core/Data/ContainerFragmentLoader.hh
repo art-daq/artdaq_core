@@ -158,7 +158,7 @@ inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag,
 	{
 		addSpace_((lastFragmentIndex() + frag.sizeBytes() + sizeof(size_t) * (metadata()->block_count + 2)) - artdaq_Fragment_.dataSizeBytes());
 	}
-	//frag.setSequenceID(artdaq_Fragment_.sequenceID());
+	// frag.setSequenceID(artdaq_Fragment_.sequenceID());
 	TLOG(TLVL_DEBUG + 33, "ContainerFragmentLoader") << "addFragment, copying " << frag.sizeBytes() << " bytes from " << static_cast<void*>(frag.headerAddress()) << " to " << static_cast<void*>(dataEnd_());
 	memcpy(dataEnd_(), frag.headerAddress(), frag.sizeBytes());
 	metadata()->has_index = 0;
@@ -203,7 +203,7 @@ inline void artdaq::ContainerFragmentLoader::addFragments(artdaq::FragmentPtrs& 
 			throw cet::exception("WrongFragmentType") << "ContainerFragmentLoader::addFragments: Trying to add a fragment of different type than what's already been added!";  // NOLINT(cert-err60-cpp)
 		}
 
-		//frag->setSequenceID(artdaq_Fragment_.sequenceID());
+		// frag->setSequenceID(artdaq_Fragment_.sequenceID());
 		TLOG(TLVL_DEBUG + 33, "ContainerFragmentLoader") << "addFragments, copying " << frag->sizeBytes() << " bytes from " << static_cast<void*>(frag->headerAddress()) << " to " << static_cast<void*>(dataEnd_());
 		memcpy(data_ptr, frag->headerAddress(), frag->sizeBytes());
 		data_ptr = static_cast<uint8_t*>(data_ptr) + frag->sizeBytes();
