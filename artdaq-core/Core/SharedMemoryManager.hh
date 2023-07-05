@@ -380,6 +380,9 @@ private:
 		size_t lowest_seq_id_read;
 		bool destructive_read_mode;
 
+		std::atomic<int> writer_count;
+		std::atomic<int> reader_count;
+
 		std::atomic<int> next_id;
 		int rank;
 		unsigned ready_magic;
@@ -420,6 +423,8 @@ private:
 	mutable std::mutex search_mutex_;
 
 	std::atomic<size_t> last_seen_id_;
+	bool registered_reader_{false};
+	bool registered_writer_{false};
 	size_t min_write_size_;
 };
 

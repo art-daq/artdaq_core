@@ -17,7 +17,7 @@ cmake_minimum_required (VERSION 3.19 FATAL_ERROR)
 
 find_package(cetmodules 3.16.00 REQUIRED)
 
-project(artdaq_core VERSION 3.09.03 LANGUAGES CXX C)
+project(artdaq_core VERSION 3.09.12 LANGUAGES CXX C)
 
 include(CetCMakeEnv)
 cet_cmake_env()
@@ -31,14 +31,14 @@ cet_set_compiler_flags(DIAGS VIGILANT
   EXTRA_FLAGS -pedantic
 )
 
-find_package(canvas_root_io REQUIRED EXPORT) # Dictionaries.
-find_package(canvas REQUIRED EXPORT)
-find_package(messagefacility REQUIRED EXPORT)
-find_package(fhiclcpp REQUIRED EXPORT)
-find_package(cetlib REQUIRED EXPORT)
+find_package(canvas_root_io REQUIRED EXPORT QUIET) # Dictionaries.
+find_package(canvas REQUIRED EXPORT QUIET)
+find_package(messagefacility REQUIRED EXPORT QUIET)
+find_package(fhiclcpp REQUIRED EXPORT QUIET)
+find_package(cetlib REQUIRED EXPORT QUIET)
 find_package(TRACE REQUIRED EXPORT)
 
-find_package(Boost COMPONENTS date_time filesystem thread REQUIRED EXPORT)
+find_package(Boost QUIET COMPONENTS date_time filesystem thread REQUIRED EXPORT)
 find_package(Threads REQUIRED EXPORT)
 
 # Debug streamer.
