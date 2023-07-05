@@ -314,6 +314,12 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 {
 	TLOG(TLVL_GETBUFFER) << "GetBufferForReading BEGIN";
 
+	if (!registered_reader_)
+	{
+		shm_ptr_->reader_count++;
+		registered_reader_ = true;
+	}
+
 	std::lock_guard<std::mutex> lk(search_mutex_);
 	// TraceLock lk(search_mutex_, 11, "GetBufferForReadingSearch");
 	auto rp = shm_ptr_->reader_pos.load();
@@ -323,7 +329,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 	for (int retry = 0; retry < 5; retry++)
 	{
 		BufferSemaphoreFlags sem;
-		int16_t sem_id;
+		int16_t sem_id = -2;
 		int buffer_num = -1;
 		ShmBuffer* buffer_ptr = nullptr;
 		uint64_t seqID = -1;
@@ -354,7 +360,7 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 					seqID = buf->sequence_id;
 					buffer_num = buffer;
 					touchBuffer_(buf);
-					if (shm_ptr_->destructive_read_mode || seqID == last_seen_id_ + 1)
+					if (seqID == last_seen_id_ + shm_ptr_->reader_count)
 					{
 						break;
 					}
@@ -366,7 +372,16 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 		{
 			sem = buffer_ptr->sem.load();
 			sem_id = buffer_ptr->sem_id.load();
+			seqID = buffer_ptr->sequence_id.load();
 		}
+
+		TLOG(TLVL_GETBUFFER + 2) << "GetBufferForReading: Mode: " << std::boolalpha << shm_ptr_->destructive_read_mode << ", seqID: " << seqID << ", last_seen_id_: " << last_seen_id_ << ", reader_count: " << shm_ptr_->reader_count;
+		// Round-robin to readers, but check for left-behind buffers
+		if(shm_ptr_->destructive_read_mode && last_seen_id_ > 0 && seqID != last_seen_id_ + shm_ptr_->reader_count && seqID > last_seen_id_ - shm_ptr_->reader_count ){
+			TLOG(TLVL_GETBUFFER + 2) << "GetBufferForReading: Skipping due to seqID check";
+			continue;
+		}
+		TLOG(TLVL_GETBUFFER + 2) << "GetBufferForReading: After seqID check";
 
 		if ((buffer_ptr == nullptr) || (sem_id != -1 && sem_id != manager_id_) || sem != BufferSemaphoreFlags::Full)
 		{
@@ -420,6 +435,12 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 {
 	TLOG(TLVL_GETBUFFER + 1) << "GetBufferForWriting BEGIN, overwrite=" << (overwrite ? "true" : "false");
+
+	if (!registered_writer_)
+	{
+		shm_ptr_->writer_count++;
+		registered_writer_ = true;
+	}
 
 	std::lock_guard<std::mutex> lk(search_mutex_);
 	// TraceLock lk(search_mutex_, 12, "GetBufferForWritingSearch");
@@ -1215,6 +1236,8 @@ std::string artdaq::SharedMemoryManager::toString()
 	     << "Buffer Size: " << std::to_string(shm_ptr_->buffer_size) << " bytes" << std::endl
 	     << "Buffers Written: " << std::to_string(shm_ptr_->next_sequence_id) << std::endl
 	     << "Rank of Writer: " << shm_ptr_->rank << std::endl
+	     << "Number of Writers: " << shm_ptr_->writer_count << std::endl
+	     << "Number of Readers: " << shm_ptr_->reader_count << std::endl
 	     << "Ready Magic Bytes: 0x" << std::hex << shm_ptr_->ready_magic << std::dec << std::endl
 	     << std::endl;
 
@@ -1341,6 +1364,14 @@ void artdaq::SharedMemoryManager::Detach(bool throwException, const std::string&
 				shmBuf->sem = BufferSemaphoreFlags::Full;
 			}
 			shmBuf->sem_id = -1;
+		}
+		if(registered_reader_) {
+			shm_ptr_->reader_count--;
+			registered_reader_ = false;
+		}
+		if(registered_writer_){
+			shm_ptr_->writer_count--;
+			registered_writer_ = false;
 		}
 	}
 

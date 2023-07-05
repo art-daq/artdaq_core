@@ -73,19 +73,19 @@ public:
 	 * \param frag A Fragment object to be added to the ContainerFragment
 	 * \exception cet::exception If the Fragment to be added has a different type than expected
 	 */
-	void addFragment(artdaq::Fragment& frag);
+	void addFragment(artdaq::Fragment& frag, bool allowDifferentTypes = false);
 
 	/**
 	 * \brief Add a Fragment to the ContainerFragment by smart pointer
 	 * \param frag A FragmentPtr to a Fragment to be added to the ContainerFragment
 	 */
-	void addFragment(artdaq::FragmentPtr& frag);
+	void addFragment(artdaq::FragmentPtr& frag, bool allowDifferentTypes = false);
 
 	/**
 	 * \brief Add a collection of Fragment objects to the ContainerFragment
 	 * \param frags An artdaq::FragmentPtrs object containing Fragments to be added to the ContainerFragment
 	 */
-	void addFragments(artdaq::FragmentPtrs& frags);
+	void addFragments(artdaq::FragmentPtrs& frags, bool allowDifferentTypes = false);
 
 private:
 	// Note that this non-const reference hides the const reference in the base class
@@ -142,12 +142,12 @@ inline void artdaq::ContainerFragmentLoader::addSpace_(size_t bytes)
 	TLOG(TLVL_DEBUG + 33, "ContainerFragmentLoader") << "addSpace_: dataEnd_ is now at " << static_cast<void*>(dataEnd_()) << " (oldSizeBytes/deltaBytes: " << currSize << "/" << bytes << ")";
 }
 
-inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
+inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag, bool allowDifferentTypes)
 {
 	TLOG(TLVL_DEBUG + 33, "ContainerFragmentLoader") << "addFragment: Adding Fragment with payload size " << frag.dataSizeBytes() << " to Container";
 	if (metadata()->fragment_type == Fragment::EmptyFragmentType)
 		metadata()->fragment_type = frag.type();
-	else if (frag.type() != metadata()->fragment_type)
+	else if (!allowDifferentTypes && frag.type() != metadata()->fragment_type)
 	{
 		TLOG(TLVL_ERROR, "ContainerFragmentLoader") << "addFragment: Trying to add a fragment of different type than what's already been added!";
 		throw cet::exception("WrongFragmentType") << "ContainerFragmentLoader::addFragment: Trying to add a fragment of different type than what's already been added!";  // NOLINT(cert-err60-cpp)
@@ -158,7 +158,7 @@ inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 	{
 		addSpace_((lastFragmentIndex() + frag.sizeBytes() + sizeof(size_t) * (metadata()->block_count + 2)) - artdaq_Fragment_.dataSizeBytes());
 	}
-	frag.setSequenceID(artdaq_Fragment_.sequenceID());
+	//frag.setSequenceID(artdaq_Fragment_.sequenceID());
 	TLOG(TLVL_DEBUG + 33, "ContainerFragmentLoader") << "addFragment, copying " << frag.sizeBytes() << " bytes from " << static_cast<void*>(frag.headerAddress()) << " to " << static_cast<void*>(dataEnd_());
 	memcpy(dataEnd_(), frag.headerAddress(), frag.sizeBytes());
 	metadata()->has_index = 0;
@@ -173,12 +173,12 @@ inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::Fragment& frag)
 	reset_index_ptr_();
 }
 
-inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::FragmentPtr& frag)
+inline void artdaq::ContainerFragmentLoader::addFragment(artdaq::FragmentPtr& frag, bool allowDifferentTypes)
 {
-	addFragment(*frag);
+	addFragment(*frag, allowDifferentTypes);
 }
 
-inline void artdaq::ContainerFragmentLoader::addFragments(artdaq::FragmentPtrs& frags)
+inline void artdaq::ContainerFragmentLoader::addFragments(artdaq::FragmentPtrs& frags, bool allowDifferentTypes)
 {
 	TLOG(TLVL_DEBUG + 33, "ContainerFragmentLoader") << "addFragments: Adding " << frags.size() << " Fragments to Container";
 
@@ -197,13 +197,13 @@ inline void artdaq::ContainerFragmentLoader::addFragments(artdaq::FragmentPtrs& 
 	{
 		if (metadata()->fragment_type == Fragment::EmptyFragmentType)
 			metadata()->fragment_type = frag->type();
-		else if (frag->type() != metadata()->fragment_type)
+		else if (!allowDifferentTypes && frag->type() != metadata()->fragment_type)
 		{
 			TLOG(TLVL_ERROR, "ContainerFragmentLoader") << "addFragments: Trying to add a fragment of different type than what's already been added!";
 			throw cet::exception("WrongFragmentType") << "ContainerFragmentLoader::addFragments: Trying to add a fragment of different type than what's already been added!";  // NOLINT(cert-err60-cpp)
 		}
 
-		frag->setSequenceID(artdaq_Fragment_.sequenceID());
+		//frag->setSequenceID(artdaq_Fragment_.sequenceID());
 		TLOG(TLVL_DEBUG + 33, "ContainerFragmentLoader") << "addFragments, copying " << frag->sizeBytes() << " bytes from " << static_cast<void*>(frag->headerAddress()) << " to " << static_cast<void*>(dataEnd_());
 		memcpy(data_ptr, frag->headerAddress(), frag->sizeBytes());
 		data_ptr = static_cast<uint8_t*>(data_ptr) + frag->sizeBytes();
