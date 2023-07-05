@@ -8,22 +8,22 @@
 #define QuickVec_hh
 
 // extern "C" {
-//#include <stdint.h>
+// #include <stdint.h>
 // }
 
 #include <cstring>  // memcpy
-//#include <strings.h>		// bzero
-//#include <stdlib.h>		// posix_memalign
+// #include <strings.h>		// bzero
+// #include <stdlib.h>		// posix_memalign
 #include <cstddef>  // ptrdiff_t
-//#include <utility>		// std::swap
-//#include <memory>		// unique_ptr
+// #include <utility>		// std::swap
+// #include <memory>		// unique_ptr
 /** \cond  */
 #include <cassert>
 #include <cmath>
 #include <vector>
 /** \endcond */
 
-//#include "trace.h"		// TRACE
+// #include "trace.h"		// TRACE
 #ifndef TRACEN
 #define TRACEN(nam, lvl, ...)
 #define UNDEF_TRACE_AT_END
@@ -73,7 +73,10 @@ static inline void* QV_MEMALIGN(size_t boundary, size_t size)
 	 *                                                                        \
 	 * Class_Version() MUST be updated every time private member data change. \
 	 */                                                                       \
-	static short Class_Version() { return 5; }  // proper version for templates
+	static short Class_Version()                                              \
+	{                                                                         \
+		return 5;                                                             \
+	}  // proper version for templates
 #endif
 
 namespace artdaq {
