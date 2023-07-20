@@ -351,8 +351,12 @@ int artdaq::SharedMemoryManager::GetBufferForReading()
 		}
 
 		TLOG(TLVL_GETBUFFER + 2) << "GetBufferForReading: Mode: " << std::boolalpha << shm_ptr_->destructive_read_mode << ", seqID: " << seqID << ", last_seen_id_: " << last_seen_id_ << ", reader_count: " << shm_ptr_->reader_count;
-		// Round-robin to readers, but check for left-behind buffers
-		if (shm_ptr_->destructive_read_mode && last_seen_id_ > 0 && seqID != last_seen_id_ + shm_ptr_->reader_count && seqID > last_seen_id_ - shm_ptr_->reader_count)
+
+		if (shm_ptr_->destructive_read_mode && last_seen_id_ > 0    // Round-robin enabled
+		    && shm_ptr_->reader_count > 1                           // Don't skip buffers if there is only one reader
+		    && seqID != last_seen_id_ + shm_ptr_->reader_count      // SeqID is not "next" SeqID
+		    && seqID > last_seen_id_ - shm_ptr_->reader_count       // SeqID is not "left behind" (from at least previous RR)
+		    && seqID < last_seen_id_ + 2 * shm_ptr_->reader_count)  // Reader is not "left behind" (SeqID from next RR)
 		{
 			TLOG(TLVL_GETBUFFER + 2) << "GetBufferForReading: Skipping due to seqID check";
 			continue;

@@ -180,7 +180,7 @@ struct artdaq::detail::RawFragmentHeader
 	 * @param other RawFragmentHeader to compare
 	 * @return Whether the two RawFragmentHeaders are identical
 	 */
-	bool operator==(const detail::RawFragmentHeader& other)
+	bool operator==(const detail::RawFragmentHeader& other) const
 	{
 		return word_count == other.word_count &&
 		       version == other.version &&
