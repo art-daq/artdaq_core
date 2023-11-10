@@ -21,18 +21,28 @@ old_style_config_vars
 
 #
 product			version		optional
+canvas_root_io  v1_13_01    s126
 canvas_root_io  v1_12_03    s124
-canvas_root_io  v1_12_02    s123
 canvas_root_io  v1_11_02    s120a
-canvas_root_io  v1_11_01    s120
 canvas_root_io	v1_09_04	s112
 TRACE			v3_17_09
-cetmodules		v3_21_02	-	only_for_build
+cetmodules		v3_22_02	-	only_for_build
 end_product_list
 
 # -nq- means there is no qualifier
 # a "-" means the dependent product is not required by the parent and will not be setup
 qualifier		canvas_root_io	TRACE	notes
+c14:s126:debug	c14:debug		-nq-	-std=c++17
+c14:s126:prof	c14:prof		-nq-	-std=c++17
+c15:s126:debug	c15:debug		-nq-	-std=c++17
+c15:s126:prof	c15:prof		-nq-	-std=c++17
+e20:s126:debug	e20:debug		-nq-	-std=c++17
+e20:s126:prof	e20:prof		-nq-	-std=c++17
+e26:s126:debug	e26:debug		-nq-	-std=c++17
+e26:s126:prof	e26:prof		-nq-	-std=c++17
+e28:s126:debug	e28:debug		-nq-	-std=c++20
+e28:s126:prof	e28:prof		-nq-	-std=c++20
+
 c14:s124:debug	c14:debug		-nq-	-std=c++17
 c14:s124:prof	c14:prof		-nq-	-std=c++17
 c15:s124:debug	c15:debug		-nq-	-std=c++17
@@ -44,15 +54,6 @@ e26:s124:prof	e26:prof		-nq-	-std=c++17
 e28:s124:debug	e28:debug		-nq-	-std=c++20
 e28:s124:prof	e28:prof		-nq-	-std=c++20
 
-c14:s123:debug	c14:debug		-nq-	-std=c++17
-c14:s123:prof	c14:prof		-nq-	-std=c++17
-c15:s123:debug	c15:debug		-nq-	-std=c++17
-c15:s123:prof	c15:prof		-nq-	-std=c++17
-e20:s123:debug	e20:debug		-nq-	-std=c++17
-e20:s123:prof	e20:prof		-nq-	-std=c++17
-e26:s123:debug	e26:debug		-nq-	-std=c++17
-e26:s123:prof	e26:prof		-nq-	-std=c++17
-
 c7:s120a:debug	c7:debug		-nq-	-std=c++17
 c7:s120a:prof	c7:prof			-nq-	-std=c++17
 c14:s120a:debug	c14:debug		-nq-	-std=c++17
@@ -61,15 +62,6 @@ e20:s120a:debug	e20:debug		-nq-	-std=c++17
 e20:s120a:prof	e20:prof		-nq-	-std=c++17
 e26:s120a:debug	e26:debug		-nq-	-std=c++17
 e26:s120a:prof	e26:prof		-nq-	-std=c++17
-
-c7:s120:debug	c7:debug		-nq-	-std=c++17
-c7:s120:prof	c7:prof			-nq-	-std=c++17
-c14:s120:debug	c14:debug		-nq-	-std=c++17
-c14:s120:prof	c14:prof		-nq-	-std=c++17
-e20:s120:debug	e20:debug		-nq-	-std=c++17
-e20:s120:prof	e20:prof		-nq-	-std=c++17
-e26:s120:debug	e26:debug		-nq-	-std=c++17
-e26:s120:prof	e26:prof		-nq-	-std=c++17
 
 c7:s112:debug	c7:debug		-nq-	-std=c++17
 c7:s112:prof	c7:prof			-nq-	-std=c++17
