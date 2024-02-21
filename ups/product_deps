@@ -21,6 +21,8 @@ old_style_config_vars
 
 #
 product			version		optional
+canvas_root_io  v1_13_04    s129
+canvas_root_io  v1_13_03    s128
 canvas_root_io  v1_13_01    s126
 canvas_root_io  v1_12_03    s124
 canvas_root_io  v1_11_02    s120a
@@ -32,6 +34,28 @@ end_product_list
 # -nq- means there is no qualifier
 # a "-" means the dependent product is not required by the parent and will not be setup
 qualifier		canvas_root_io	TRACE	notes
+c14:s129:debug	c14:debug		-nq-	-std=c++17
+c14:s129:prof	c14:prof		-nq-	-std=c++17
+c15:s129:debug	c15:debug		-nq-	-std=c++17
+c15:s129:prof	c15:prof		-nq-	-std=c++17
+e20:s129:debug	e20:debug		-nq-	-std=c++17
+e20:s129:prof	e20:prof		-nq-	-std=c++17
+e26:s129:debug	e26:debug		-nq-	-std=c++17
+e26:s129:prof	e26:prof		-nq-	-std=c++17
+e28:s129:debug	e28:debug		-nq-	-std=c++20
+e28:s129:prof	e28:prof		-nq-	-std=c++20
+
+c14:s128:debug	c14:debug		-nq-	-std=c++17
+c14:s128:prof	c14:prof		-nq-	-std=c++17
+c15:s128:debug	c15:debug		-nq-	-std=c++17
+c15:s128:prof	c15:prof		-nq-	-std=c++17
+e20:s128:debug	e20:debug		-nq-	-std=c++17
+e20:s128:prof	e20:prof		-nq-	-std=c++17
+e26:s128:debug	e26:debug		-nq-	-std=c++17
+e26:s128:prof	e26:prof		-nq-	-std=c++17
+e28:s128:debug	e28:debug		-nq-	-std=c++20
+e28:s128:prof	e28:prof		-nq-	-std=c++20
+
 c14:s126:debug	c14:debug		-nq-	-std=c++17
 c14:s126:prof	c14:prof		-nq-	-std=c++17
 c15:s126:debug	c15:debug		-nq-	-std=c++17
