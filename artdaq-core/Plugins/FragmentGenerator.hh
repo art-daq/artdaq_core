@@ -41,7 +41,7 @@ public:
 	 * Fragments may or may not have the same FragmentID. Fragments
 	 * will all be part of the same Run and SubRun.
 	 */
-	virtual bool getNext(FragmentPtrs& output) = 0;
+	virtual bool getNext(PostmarkedFragmentPtrs& output) = 0;
 
 	/**
 	 * \brief Which fragment IDs does this FragmentGenerator generate?
