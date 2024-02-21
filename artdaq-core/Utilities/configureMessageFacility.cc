@@ -33,6 +33,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	char* logFhiclCode = getenv("ARTDAQ_LOG_FHICL");
 	char* artdaqMfextensionsDir = getenv("ARTDAQ_MFEXTENSIONS_DIR");
 	char* useMFExtensionsS = getenv("ARTDAQ_MFEXTENSIONS_ENABLED");
+	char* run_number            = getenv("ARTDAQ_RUN_NUMBER");
 	bool useMFExtensions = false;
 	if (useMFExtensionsS != nullptr && !(strncmp(useMFExtensionsS, "0", 1) == 0))
 	{
@@ -108,8 +109,20 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	{
 		ss << " file: {";
 		ss << R"( type: "GenFile" threshold: "DEBUG" seperator: "-")";
-		ss << " pattern: \"" << progname << fileExtraName << "-%?H%t-%p.log"
-		   << "\"";
+    //  ss << " pattern: \"" << progname << fileExtraName << "-%?H%t-%p.log"
+    //     << "\"";
+    if (run_number == nullptr) {
+      ss << " pattern: \"" << progname << fileExtraName << "-%?H%t-%p.log" << "\"";
+    }
+    else {
+//-----------------------------------------------------------------------------
+// Mu2e case: run number is defined
+//-----------------------------------------------------------------------------
+      char c[10];
+      sprintf(c,"%06i",std::stoi(run_number));
+      ss << " pattern: \"" << progname << "-" << c << fileExtraName << "-%?H%t-%p.log" << "\"";
+    }
+		   
 		ss << " timestamp_pattern: \"%Y%m%d%H%M%S\"";
 		ss << " directory: \"" << logfileDir << "\"";
 		ss << " append : false";

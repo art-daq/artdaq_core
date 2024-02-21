@@ -753,6 +753,11 @@ public:
 	 * \return Copy of the RawFragmentHeader of this Fragment, upgraded to the latest version
 	 */
 	detail::RawFragmentHeader const fragmentHeader() const;
+
+	~Fragment()
+	{
+		if (upgraded_header_ != nullptr) delete upgraded_header_;
+	}
 #endif
 
 private:
@@ -765,7 +770,9 @@ private:
 
 #if HIDE_FROM_ROOT
 
-	detail::RawFragmentHeader* fragmentHeaderPtr();
+	mutable detail::RawFragmentHeader* upgraded_header_{nullptr};
+
+	detail::RawFragmentHeader* fragmentHeaderPtr() const;
 
 #endif
 };
@@ -1181,14 +1188,12 @@ artdaq::Fragment::headerSizeWords() const
 				break;
 			case 0: {
 				TLOG(52, "Fragment") << "Getting size of RawFragmentHeaderV0";
-				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0 const*>(&vals_[0]);
-				return old_hdr->num_words();
+				return detail::RawFragmentHeaderV0::num_words();
 				break;
 			}
 			case 1: {
 				TLOG(52, "Fragment") << "Getting size of RawFragmentHeaderV1";
-				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1 const*>(&vals_[0]);
-				return old_hdr->num_words();
+				return detail::RawFragmentHeaderV1::num_words();
 				break;
 			}
 			default:
@@ -1200,9 +1205,10 @@ artdaq::Fragment::headerSizeWords() const
 }
 
 inline artdaq::detail::RawFragmentHeader*
-artdaq::Fragment::fragmentHeaderPtr()
+artdaq::Fragment::fragmentHeaderPtr() const
 {
-	auto hdr = reinterpret_cast_checked<detail::RawFragmentHeader*>(&vals_[0]);
+	if (upgraded_header_ != nullptr) return upgraded_header_;
+	auto hdr = reinterpret_cast_checked<detail::RawFragmentHeader const*>(&vals_[0]);
 	if (hdr->version != detail::RawFragmentHeader::CurrentVersion)
 	{
 		switch (hdr->version)
@@ -1212,32 +1218,16 @@ artdaq::Fragment::fragmentHeaderPtr()
 				break;
 			case 0: {
 				TLOG(52, "Fragment") << "Upgrading RawFragmentHeaderV0 (non const)";
-				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0*>(&vals_[0]);
-				auto new_hdr = old_hdr->upgrade();
-
-				auto szDiff = hdr->num_words() - old_hdr->num_words();
-				if (szDiff > 0)
-				{
-					vals_.insert(vals_.begin(), szDiff, 0);
-					new_hdr.word_count = vals_.size();
-				}
-				memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
-				hdr = reinterpret_cast_checked<detail::RawFragmentHeader*>(&vals_[0]);  // Update hdr in case vals_->insert call invalidated pointers
+				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0 const*>(&vals_[0]);
+				upgraded_header_ = new detail::RawFragmentHeader(old_hdr->upgrade());
+				return upgraded_header_;
 				break;
 			}
 			case 1: {
 				TLOG(52, "Fragment") << "Upgrading RawFragmentHeaderV1 (non const)";
-				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1*>(&vals_[0]);
-				auto new_hdr = old_hdr->upgrade();
-
-				auto szDiff = hdr->num_words() - old_hdr->num_words();
-				if (szDiff > 0)
-				{
-					vals_.insert(vals_.begin(), szDiff, 0);
-					new_hdr.word_count = vals_.size();
-				}
-				memcpy(&vals_[0], &new_hdr, hdr->num_words() * sizeof(RawDataType));
-				hdr = reinterpret_cast_checked<detail::RawFragmentHeader*>(&vals_[0]);  // Update hdr in case vals_->insert call invalidated pointers
+				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1 const*>(&vals_[0]);
+				upgraded_header_ = new detail::RawFragmentHeader(old_hdr->upgrade());
+				return upgraded_header_;
 				break;
 			}
 			default:
@@ -1245,40 +1235,13 @@ artdaq::Fragment::fragmentHeaderPtr()
 				break;
 		}
 	}
-	return hdr;
+	return const_cast<detail::RawFragmentHeader*>(hdr);
 }
 
 inline artdaq::detail::RawFragmentHeader const
 artdaq::Fragment::fragmentHeader() const
 {
-	auto hdr = *reinterpret_cast_checked<detail::RawFragmentHeader const*>(&vals_[0]);
-	if (hdr.version != detail::RawFragmentHeader::CurrentVersion)
-	{
-		switch (hdr.version)
-		{
-			case 0xFFFF:
-				TLOG(51, "Fragment") << "Not upgrading InvalidVersion Fragment";
-				break;
-			case 0: {
-				TLOG(52, "Fragment") << "Upgrading RawFragmentHeaderV0 (const)";
-				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV0 const*>(&vals_[0]);
-				hdr = old_hdr->upgrade();
-
-				break;
-			}
-			case 1: {
-				TLOG(52, "Fragment") << "Upgrading RawFragmentHeaderV1 (const)";
-				auto old_hdr = reinterpret_cast_checked<detail::RawFragmentHeaderV1 const*>(&vals_[0]);
-				hdr = old_hdr->upgrade();
-
-				break;
-			}
-			default:
-				throw cet::exception("Fragment") << "A Fragment with an unknown version (" << std::to_string(hdr.version) << ") was received!";  // NOLINT(cert-err60-cpp)
-				break;
-		}
-	}
-	return hdr;
+	return *fragmentHeaderPtr();
 }
 
 inline void

@@ -490,7 +490,7 @@ int artdaq::SharedMemoryManager::GetBufferForWriting(bool overwrite)
 			auto sem = buf->sem.load();
 			auto sem_id = buf->sem_id.load();
 
-			if (sem == BufferSemaphoreFlags::Full)
+			if (sem == BufferSemaphoreFlags::Full && sem_id == -1)
 			{
 				touchBuffer_(buf);
 				if (!buf->sem_id.compare_exchange_strong(sem_id, manager_id_))
@@ -610,7 +610,7 @@ size_t artdaq::SharedMemoryManager::WriteReadyCount(bool overwrite)
 	{
 		return 0;
 	}
-	TLOG(TLVL_WRITEREADY) << std::hex << std::showbase << shm_key_ << " ReadReadyCount BEGIN" << std::dec;
+	TLOG(TLVL_WRITEREADY) << std::hex << std::showbase << shm_key_ << " WriteReadyCount BEGIN" << std::dec;
 	std::unique_lock<std::mutex> lk(search_mutex_);
 	// TraceLock lk(search_mutex_, 15, "WriteReadyCountSearch");
 	TLOG(TLVL_WRITEREADY) << "WriteReadyCount(" << overwrite << ") lock acquired, scanning " << shm_ptr_->buffer_count << " buffers";
@@ -710,7 +710,7 @@ bool artdaq::SharedMemoryManager::ReadyForWrite(bool overwrite)
 		{
 			TLOG(TLVL_WRITEREADY + 1) << std::hex << std::showbase << shm_key_
 			                          << std::dec
-			                          << " WriteReadyCount: Buffer " << ii << " is either empty or available for overwrite.";
+			                          << " ReadyForWrite: Buffer " << ii << " is either empty or available for overwrite.";
 			return true;
 		}
 	}
@@ -992,11 +992,10 @@ void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer, bool force, bool d
 	touchBuffer_(shmBuf);
 
 	shmBuf->readPos = 0;
-	shmBuf->sem = BufferSemaphoreFlags::Full;
 
 	if ((force && (manager_id_ == 0 || manager_id_ == shmBuf->sem_id)) || (!force && shm_ptr_->destructive_read_mode))
 	{
-		TLOG(TLVL_POS + 3) << "MarkBufferEmpty Resetting buffer " << buffer << " to Empty state";
+		TLOG(TLVL_POS + 3) << "MarkBufferEmpty Resetting buffer " << buffer << " (SeqID " << shmBuf->sequence_id << ") to Empty state";
 		shmBuf->writePos = 0;
 		shmBuf->sem = BufferSemaphoreFlags::Empty;
 		if (shm_ptr_->reader_pos == static_cast<unsigned>(buffer) && !shm_ptr_->destructive_read_mode)
@@ -1004,6 +1003,9 @@ void artdaq::SharedMemoryManager::MarkBufferEmpty(int buffer, bool force, bool d
 			TLOG(TLVL_POS + 3) << "MarkBufferEmpty Broadcast mode; incrementing reader_pos from " << shm_ptr_->reader_pos << " to " << (buffer + 1) % shm_ptr_->buffer_count;
 			shm_ptr_->reader_pos = (buffer + 1) % shm_ptr_->buffer_count;
 		}
+	}
+	else {
+		shmBuf->sem = BufferSemaphoreFlags::Full;
 	}
 	shmBuf->sem_id = -1;
 	TLOG(TLVL_POS + 3) << "MarkBufferEmpty END, buffer=" << buffer << ", force=" << force;
@@ -1287,7 +1289,7 @@ bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphor
 		}
 		return false;
 	}
-	TLOG(TLVL_CHKBUFFER) << "checkBuffer_: Checking that buffer " << buffer->sequence_id << " has sem_id " << manager_id_ << " (Current: " << buffer->sem_id << ") and is in state " << FlagToString(flags) << " (current: " << FlagToString(buffer->sem) << ")";
+	TLOG(TLVL_CHKBUFFER) << "checkBuffer_: Checking that buffer with SeqID " << buffer->sequence_id << " has sem_id " << manager_id_ << " (Current: " << buffer->sem_id << ") and is in state " << FlagToString(flags) << " (current: " << FlagToString(buffer->sem) << ")";
 	if (exceptions)
 	{
 		if (buffer->sem != flags)
@@ -1303,7 +1305,7 @@ bool artdaq::SharedMemoryManager::checkBuffer_(ShmBuffer* buffer, BufferSemaphor
 
 	if (!ret)
 	{
-		TLOG(TLVL_WARNING) << "CheckBuffer detected issue with buffer " << buffer->sequence_id << "!"
+		TLOG(TLVL_WARNING) << "CheckBuffer detected issue with buffer with SeqID " << buffer->sequence_id << "!"
 		                   << " ID: " << buffer->sem_id << " (Expected " << manager_id_ << "), Flag: " << FlagToString(buffer->sem) << " (Expected " << FlagToString(flags) << "). "
 		                   << R"(ID -1 is okay if expected flag is "Full" or "Empty".)";
 	}
@@ -1315,6 +1317,7 @@ void artdaq::SharedMemoryManager::touchBuffer_(ShmBuffer* buffer)
 {
 	if ((buffer == nullptr) || (buffer->sem_id != -1 && buffer->sem_id != manager_id_))
 	{
+		//TLOG(TLVL_CHKBUFFER + 1) << "touchBuffer_: Not touching buffer at " << static_cast<void*>(buffer) << " with sequence_id " << buffer->sequence_id;
 		return;
 	}
 	TLOG(TLVL_CHKBUFFER + 1) << "touchBuffer_: Touching buffer at " << static_cast<void*>(buffer) << " with sequence_id " << buffer->sequence_id;
@@ -1380,6 +1383,7 @@ void artdaq::SharedMemoryManager::Detach(bool throwException, const std::string&
 
 		if (throwException)
 		{
+			TRACE_CNTL("modeM", (uint64_t)0);
 			throw cet::exception(category) << message;  // NOLINT(cert-err60-cpp)
 		}
 	}
