@@ -172,6 +172,10 @@ bool artdaq::SharedMemoryManager::Attach(size_t timeout_usec)
 		manager_id_ = 0;
 	}
 
+#define REMOVE_OLD_SHM 0  // ELF, 10/18/2019: I don't think this will have the intended effect. Removing here will make clients unable to connect
+#if REMOVE_OLD_SHM
+	bool mark_shm_for_removal = false;
+#endif
 	shm_segment_id_ = shmget(shm_key_, shmSize, 0666);
 	if (shm_segment_id_ == -1)
 	{
@@ -183,6 +187,15 @@ bool artdaq::SharedMemoryManager::Attach(size_t timeout_usec)
 			if (shm_segment_id_ == -1)
 			{
 				TLOG(TLVL_ERROR) << "Error creating shared memory segment with key " << std::hex << std::showbase << shm_key_ << ", errno=" << std::dec << errno << " (" << strerror(errno) << ")";
+			}
+			else
+			{
+				TLOG(TLVL_WARNING) << "This process is re-using an existing shared memory segment with key 0x" << std::hex << shm_key_ << " and ID " << std::dec << shm_segment_id_ << " instead of creating a new one. This may or may not work. If stale data is transfered, please try again."
+#if REMOVE_OLD_SHM
+				                   << " This shared memory segment will be marked for removal once all processes disconnect, so hopefully, this problem will not persist.";
+				mark_shm_for_removal = true
+#endif
+				    ;
 			}
 		}
 		else
@@ -269,6 +282,18 @@ bool artdaq::SharedMemoryManager::Attach(size_t timeout_usec)
 			                  << ", manager ID: " << std::dec << manager_id_
 			                  << ", Buffer size: " << shm_ptr_->buffer_size
 			                  << ", Buffer count: " << shm_ptr_->buffer_count;
+
+#if REMOVE_OLD_SHM  // ELF, 10/18/2019: I don't think this will have the intended effect. Removing here will make clients unable to connect
+			// If this process is the owner of the shared memory segment, but it didn't create
+			// it in this session, mark it for removal after all processes have disconnected.
+			// We'll continue to use the segment in this session, in the hope that it works,
+			// but if it doesn't, the future removal should help.
+			if (mark_shm_for_removal)
+			{
+				shmctl(shm_segment_id_, IPC_RMID, NULL);
+			}
+#endif
+
 			return true;
 		}
 
