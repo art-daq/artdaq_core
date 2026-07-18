@@ -623,6 +623,7 @@ BOOST_AUTO_TEST_CASE(Upgrade_V0)
 	hdr0.unused2 = 0xC5C5;
 
 	memcpy(f.headerBeginBytes(), &hdr0, sizeof(hdr0));
+	f.invalidateHeader();
 
 	artdaq::detail::RawFragmentHeader::RawDataType counter = 0;
 	for (size_t ii = artdaq::detail::RawFragmentHeaderV0::num_words(); ii < artdaq::detail::RawFragmentHeader::num_words() + 7; ++ii)
@@ -659,6 +660,7 @@ BOOST_AUTO_TEST_CASE(Upgrade_V1)
 	hdr1.timestamp = 0xCAFEFECAAAAABBBB;
 
 	memcpy(f.headerBeginBytes(), &hdr1, sizeof(hdr1));
+	f.invalidateHeader();
 
 	artdaq::detail::RawFragmentHeader::RawDataType counter = 0;
 	for (size_t ii = artdaq::detail::RawFragmentHeaderV1::num_words(); ii < artdaq::detail::RawFragmentHeader::num_words() + 7; ++ii)
