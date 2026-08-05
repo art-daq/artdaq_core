@@ -3,7 +3,9 @@
 
 #include <atomic>
 #include <bitset>
+#include <cstdio>
 #include <deque>
+#include <fstream>
 #include <iomanip>
 #include <list>
 #include <mutex>
@@ -392,6 +394,24 @@ public:
 
 	static uint64_t GetAvailableRAM()
 	{
+		// sysinfo() freeram excludes reclaimable page cache; use MemAvailable instead
+		std::ifstream proc_meminfo("/proc/meminfo");
+		if (proc_meminfo.is_open())
+		{
+			std::string line;
+			while (std::getline(proc_meminfo, line))
+			{
+				if (line.compare(0, 13, "MemAvailable:") == 0)
+				{
+					uint64_t kb = 0;
+					if (std::sscanf(line.c_str(), "MemAvailable: %lu", &kb) == 1)
+					{
+						return kb * 1024ULL;
+					}
+				}
+			}
+		}
+		// Fallback: sysinfo (misses cached/reclaimable pages)
 		struct sysinfo meminfo;
 		auto err = sysinfo(&meminfo);
 		if (err == 0)
