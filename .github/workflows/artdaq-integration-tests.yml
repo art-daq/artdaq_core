@@ -1,0 +1,20 @@
+name: Integration tests
+
+permissions:
+  contents: read
+
+# Controls when the action will run. Workflow runs when manually triggered using the UI
+# or API.
+on:
+  pull_request:
+    branches: [ develop ]
+  schedule:
+    - cron: "0 7 * * 1"
+
+  workflow_dispatch:
+
+
+jobs:
+  run_integration_tests:
+    name: Run Integration tests
+    uses: art-daq/.github/.github/workflows/artdaq-integration-tests.yml@stable
