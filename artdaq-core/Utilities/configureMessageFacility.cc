@@ -34,6 +34,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	char* artdaqMfextensionsDir = getenv("ARTDAQ_MFEXTENSIONS_DIR");
 	char* useMFExtensionsS = getenv("ARTDAQ_MFEXTENSIONS_ENABLED");
 	char* run_number = getenv("ARTDAQ_RUN_NUMBER");
+	char* log_timestamp = getenv("ARTDAQ_LOG_TIMESTAMP");
 	bool useMFExtensions = false;
 	if (useMFExtensionsS != nullptr && !(strncmp(useMFExtensionsS, "0", 1) == 0))
 	{
@@ -111,9 +112,27 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		ss << R"( type: "GenFile" threshold: "DEBUG" seperator: "-")";
 		//  ss << " pattern: \"" << progname << fileExtraName << "-%?H%t-%p.log"
 		//     << "\"";
+
+		//-----------------------------------------------------------------------------
+		// Mu2e case: ARTDAQ_LOG_TIMESTAMP is exported by run control at launch
+		// time so that every process of a DAQ session logs to a deterministic
+		// filename (one shared timestamp for all nodes, no PID). Run control can
+		// then construct the logfile names locally instead of discovering them
+		// over ssh on every host.
+		//-----------------------------------------------------------------------------
+		std::string filenameSuffix;
+		if (log_timestamp != nullptr)
+		{
+			filenameSuffix = std::string("-%?H") + log_timestamp + ".log";
+		}
+		else
+		{
+			filenameSuffix = "-%?H%t-%p.log";
+		}
+
 		if (run_number == nullptr)
 		{
-			ss << " pattern: \"" << progname << fileExtraName << "-%?H%t-%p.log"
+			ss << " pattern: \"" << progname << fileExtraName << filenameSuffix
 			   << "\"";
 		}
 		else
@@ -123,7 +142,7 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 			//-----------------------------------------------------------------------------
 			char c[10];
 			sprintf(c, "%06i", std::stoi(run_number));
-			ss << " pattern: \"" << progname << "-" << c << fileExtraName << "-%?H%t-%p.log"
+			ss << " pattern: \"" << progname << "-" << c << fileExtraName << filenameSuffix
 			   << "\"";
 		}
 
