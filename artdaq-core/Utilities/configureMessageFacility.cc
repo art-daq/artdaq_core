@@ -110,8 +110,6 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 	{
 		ss << " file: {";
 		ss << R"( type: "GenFile" threshold: "DEBUG" seperator: "-")";
-		//  ss << " pattern: \"" << progname << fileExtraName << "-%?H%t-%p.log"
-		//     << "\"";
 
 		std::string filenameSuffix;
 		if (log_timestamp != nullptr)
@@ -130,9 +128,6 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		}
 		else
 		{
-			//-----------------------------------------------------------------------------
-			// Mu2e case: run number is defined
-			//-----------------------------------------------------------------------------
 			char c[10];
 			sprintf(c, "%06i", std::stoi(run_number));
 			ss << " pattern: \"" << progname << "-" << c << fileExtraName << filenameSuffix
