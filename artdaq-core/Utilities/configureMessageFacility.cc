@@ -113,13 +113,6 @@ std::string artdaq::generateMessageFacilityConfiguration(char const* progname, b
 		//  ss << " pattern: \"" << progname << fileExtraName << "-%?H%t-%p.log"
 		//     << "\"";
 
-		//-----------------------------------------------------------------------------
-		// Mu2e case: ARTDAQ_LOG_TIMESTAMP is exported by run control at launch
-		// time so that every process of a DAQ session logs to a deterministic
-		// filename (one shared timestamp for all nodes, no PID). Run control can
-		// then construct the logfile names locally instead of discovering them
-		// over ssh on every host.
-		//-----------------------------------------------------------------------------
 		std::string filenameSuffix;
 		if (log_timestamp != nullptr)
 		{
